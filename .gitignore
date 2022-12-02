@@ -1,0 +1,18 @@
+# CSHARP Build results
+
+**/[Bb]in/
+**/[Oo]bj/
+
+# Visual Studio
+**/.vs/
+
+# Rider
+**/.idea
+
+#Input from Advent Of Code
+
+#**/AOCinput
+
+#VS Code
+
+**/.vscode
