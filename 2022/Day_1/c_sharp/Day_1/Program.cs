@@ -7,28 +7,30 @@ public static class Program
         var relativePath = "../../AOCinput";
         var input = File.ReadAllLines(relativePath);
 
-        int maxElf = -1;
         int actualElf = 0;
+
+        List<int> maxes = new();
 
         foreach(var snack in input)
         {
             if(string.IsNullOrEmpty(snack.Trim()))
             {
-                if(actualElf > maxElf)
-                {
-                    maxElf = actualElf;
-                }
+                maxes.Add(actualElf);
                 actualElf = 0;
                 continue;
             }
             actualElf += int.Parse(snack.Trim());
         }
 
-        maxElf = actualElf > maxElf ? actualElf : maxElf;
-        
+        maxes = maxes.OrderDescending().ToList();
 
-        System.Console.WriteLine(maxElf);
+        int maxThree = 0;
+        for(int i = 0; i < 3; i++)
+        {
+            maxThree += maxes[i];
+        }
 
+        System.Console.WriteLine($"MaxOne: {maxes[0]}, MaxThree: {maxThree}");
         return;
     }
 }
