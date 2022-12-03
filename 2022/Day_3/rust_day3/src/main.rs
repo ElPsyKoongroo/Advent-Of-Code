@@ -9,20 +9,30 @@ fn read_data() -> String {
 
 fn main() {
     let data = read_data();
+    let mut i = 0;
+    let mut organized_data = Vec::new();
     let mut profit = 0;
-    for items in data.split("\n") {
-        let (first_half, second_half) = items.split_at(items.len()/2);
-        let common_element = &first_half
-        .chars()
-        .filter(|c| second_half.contains(*c))
-        .collect::<Vec<char>>()
-        .first()
-        .unwrap()
-        .clone();
-        
-        profit += match common_element.is_ascii_lowercase() {
-            true  => (*common_element as u32) - ('a' as u32) + 1,
-            false => (*common_element as u32) - ('A' as u32) + 27,
+
+    for line in data.split("\n") {
+        organized_data.push(line);
+        i += 1;
+
+        if i % 3 == 0 {
+            let index = organized_data[0]
+                .chars()
+                .position(|c| {
+                    organized_data[1].chars().any(|a| a == c)
+                        && organized_data[2].chars().any(|a| a == c)
+                })
+                .unwrap();
+
+            let a = organized_data[0].chars().nth(index).unwrap();
+
+            profit += match a.is_ascii_lowercase() {
+                true => (a as u32) - ('a' as u32) + 1,
+                false => (a as u32) - ('A' as u32) + 27,
+            };
+            organized_data.clear();
         }
     }
 
