@@ -5,33 +5,139 @@ public static class Program
     public static void Main()
     {
         Day_12 day = new();
-        day.Answer1();
+        day.Answer2();
     }
 }
 
 public class Day_12
 {
     string[] inputLines;
+    string[] inputLinesTest;
+
+    private int TotalPaths;
+    private Graph graph;
     public Day_12()
     {
         inputLines = File.ReadAllLines("../AOCinput");
+        inputLinesTest = File.ReadAllLines("../AOCtest");
     }
 
+    #region Answer1
     public void Answer1()
     {
-        
+        TotalPaths = 0;
+        graph = new(inputLines);
+
+        Node start = graph.GetNodeByName("start");
+
+        var a = new List<Node>();
+
+        RecursiveSearch1(start, a);
+
+        System.Console.WriteLine(TotalPaths);
     }
+
+    private void RecursiveSearch1(Node actual, List<Node> alreadyPass)
+    {
+        List<Node> nextPassed = actual.IsBig switch
+        {
+            true => alreadyPass.ToList(),
+            false => alreadyPass.Append(actual).ToList()
+        };
+        
+        var adjacents = graph.Adjacents(actual);
+
+        if(adjacents.Length == 0) return;
+
+        foreach(Node node in adjacents)
+        {
+            if(node.Name == "end")
+            {
+                TotalPaths++;
+
+                System.Console.WriteLine(String.Join(",", nextPassed));
+                continue;
+            }
+
+            if(nextPassed.Contains(node)) continue;
+
+            RecursiveSearch1(node, nextPassed);
+        }
+    }
+    #endregion
+
+    #region Answer2
 
     public void Answer2()
     {
-        
+        TotalPaths = 0;
+        graph = new(inputLines);
+
+        Node start = graph.GetNodeByName("start");
+
+        var a = new List<Node>();
+
+        RecursiveSearch2(start, a, false);
+
+        System.Console.WriteLine(TotalPaths);
     }
+
+    private void RecursiveSearch2(Node actual, List<Node> alreadyPass, bool onlyOnce)
+    {
+        List<Node> nextPassed = actual.IsBig switch
+        {
+            true => alreadyPass.ToList(),
+            false => alreadyPass.Append(actual).ToList()
+        };
+        
+        var adjacents = graph.Adjacents(actual);
+
+        if(adjacents.Length == 0) return;
+
+        foreach(Node node in adjacents)
+        {
+            if(node.Name == "end")
+            {
+                TotalPaths++;
+
+                //System.Console.WriteLine(String.Join(",", nextPassed) + ",end");
+                continue;
+            }
+
+            if(nextPassed.Contains(node))
+            {
+                if(!onlyOnce && !node.IsBig && node.Name != "start")
+                    RecursiveSearch2(node, nextPassed, true);
+                continue;
+            }
+
+            RecursiveSearch2(node, nextPassed, onlyOnce);
+        }
+    }
+
+    #endregion
 }
+
+#region Classes
 
 public class Graph
 {
     public List<Node> _nodes;
     public  List<Link> _links;
+
+    public Node GetNodeByName(string name)
+    {
+        return _nodes.First(x=> x.Name == name);
+    }
+
+    public Node[] Adjacents(Node node)
+    {
+        return 
+            _links
+            .Where(l=> l.Has(node) != -1)
+            .Select(l=> l.GetNext(node))
+            .ToArray();
+    }
 
     public Graph(string[] input)
     {
@@ -80,7 +186,13 @@ public class Node
     public static bool operator != (Node c1, Node c2)  
     {  
         return !c1.Equals(c2);  
-    }  
+    }
+
+    public override string ToString()
+    {
+        return Name;
+    }
+
 }
 public class Link
 {
@@ -114,3 +226,5 @@ public class Link
     }  
 
 }
+
+#endregion
