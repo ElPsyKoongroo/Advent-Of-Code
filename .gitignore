@@ -21,4 +21,7 @@
 #VS Code
 
 **/.vscode
+
+# RUST
+
 target/
