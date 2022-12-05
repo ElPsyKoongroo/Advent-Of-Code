@@ -11,7 +11,7 @@ public static class Program
     {
         Day_5 day = new();
 
-        System.Console.WriteLine(day.Answer1());
+        System.Console.WriteLine(day.Answer2());
     }
 }
 
@@ -82,12 +82,48 @@ public class Day_5
         }
 
         return response.ToString();
-
-
     }
 
     public string Answer2()
     {
-        return "";
+        var input = GetInput();
+
+        var moves = 
+            inputText
+            .Split("\n\n")[1]
+            .Split("\n")
+            .Select(line => 
+                line
+                .Split(" ")
+                .Where(x=> int.TryParse(x, out int a))
+                .Select(x=> int.Parse(x))
+                .ToArray()
+            )
+            .ToArray();
+
+        foreach(var move in moves)
+        {
+            Stack<char> aux = new();
+            for(int i = 0; i < move[0]; ++i)
+            {
+                var element = input[move[1]-1].Pop();
+                aux.Push(element);
+            }
+
+            for(int i = 0; i < move[0]; ++i)
+            {
+                var element = aux.Pop();
+                input[move[2]-1].Push(element);
+            }
+        }
+
+        StringBuilder response = new();
+
+        foreach(var stack in input)
+        {
+            response.Append(stack.Pop());
+        }
+
+        return response.ToString();
     }
 }
