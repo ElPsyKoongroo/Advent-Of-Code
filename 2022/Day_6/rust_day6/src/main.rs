@@ -1,5 +1,4 @@
 use std::{io::Read, collections::VecDeque};
-use regex::Regex;
 
 fn read_data(file_name: &str) -> String {
     let mut reader = std::io::BufReader::new(std::fs::File::open(file_name).unwrap());
