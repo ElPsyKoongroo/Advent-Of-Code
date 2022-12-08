@@ -16,7 +16,7 @@ public static class Program
 public class Day_8
 {
     string[] inputLines;
-    string[] testLines;
+    //string[] testLines;
 
     public Day_8()
     {
