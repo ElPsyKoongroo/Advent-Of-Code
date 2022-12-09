@@ -7,8 +7,8 @@ public static class Program
     public static void Main()
     {
         Day_9 day = new();
-        day.Answer1();
-        //day.Answer2();
+        //day.Answer1();
+        day.Answer2();
     }
 }
 
@@ -80,7 +80,7 @@ public class Day_9
     public Day_9()
     {
         inputLines = File.ReadAllLines("../AOCinput");
-        testLines = File.ReadAllLines("../AOCtest");
+        //testLines = File.ReadAllLines("../AOCtest");
     }
 
     public void Answer1()
@@ -124,10 +124,70 @@ public class Day_9
         }
 
         System.Console.WriteLine(visited.Count);
+
     }
+
 
     public void Answer2()
     {
-        
+        HashSet<Puntito> visited = new(new PuntitoComparer());
+
+        List<Puntito> rope = new();
+
+        for (int i = 0; i < 10; ++i )
+        {
+            rope.Add(new Puntito(0,0));
+        }
+
+        visited.Add(new Puntito(0, 0));
+
+        foreach(var line in inputLines)
+        {
+            string direction = line.Split(" ")[0];
+            int count = int.Parse(line.Split(" ")[1]);
+
+            for(int step = 0; step < count; ++step)
+            {
+                rope[0].x += direction switch 
+                {
+                    "R" => 1,
+                    "L" => -1,
+                    _ => 0
+                };
+
+                rope[0].y += direction switch 
+                {
+                    "U" => 1,
+                    "D" => -1,
+                    _ => 0
+                };
+
+                for (int i = 1; i < rope.Count; ++i)
+                {
+                    int dirX = rope[i-1].x - rope[i].x;
+                    int dirY = rope[i-1].y - rope[i].y;
+
+                    if(! (Math.Abs(dirX) == 2 || Math.Abs(dirY) == 2))
+                        break;
+
+                    rope[i].x += dirX switch
+                    {
+                        >= 1 => 1,
+                        <= -1 => -1,
+                        _ => 0
+                    };
+
+                    rope[i].y += dirY switch
+                    {
+                        >= 1 => 1,
+                        <= -1 => -1,
+                        _ => 0
+                    };
+                }
+                visited.Add(new Puntito(rope[rope.Count-1]));
+            }
+        }
+
+        System.Console.WriteLine(visited.Count);
     }
 }
