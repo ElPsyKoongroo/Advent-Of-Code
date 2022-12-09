@@ -75,7 +75,7 @@ public class Day_8
                     .FirstOrDefault(y=> y.value >= table[x.x][x.y], new {index = x.y - 1, value = 0}).index + 1) 
 
                 )
-            .Max(); // +1 for each pair of axis, 4 in total
+            .Max();
 
         System.Console.WriteLine(visibles);
     }
