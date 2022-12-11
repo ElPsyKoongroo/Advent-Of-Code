@@ -7,7 +7,8 @@ public static class Program
     public static void Main()
     {
         Day_11 day = new();
-        day.Answer1();
+        //day.Answer1();
+        day.Answer2();
     }
 }
 
@@ -23,7 +24,7 @@ public class Day_11
 
     public void Answer1()
     {
-        string[] monkeyData = inputText.Split("\r\n\r\n");
+        string[] monkeyData = testText.Split("\r\n\r\n");
 
         List<Monkey> monkeys = new();
 
@@ -38,7 +39,7 @@ public class Day_11
             {
                 while(monke.items.Count != 0)
                 {
-                    (int newItem, int monkeyToAdd) = monke.InspectNext();
+                    (ulong newItem, int monkeyToAdd) = monke.InspectNext1();
                     monkeys[monkeyToAdd].items.Enqueue(newItem);
                 }
             }
@@ -49,25 +50,54 @@ public class Day_11
         System.Console.WriteLine(monkeys[0].total);
         System.Console.WriteLine(monkeys[1].total);
 
-        int total = monkeys[0].total * monkeys[1].total;
+        ulong total = monkeys[0].total * monkeys[1].total;
 
         System.Console.WriteLine(total);
     }
 
     public void Answer2()
     {
-        
+        string[] monkeyData = inputText.Split("\r\n\r\n");
+
+        List<Monkey> monkeys = new();
+
+        for(int i = 0; i < monkeyData.Length; ++i)
+        {
+            monkeys.Add(new Monkey(monkeyData[i], i));
+        }
+
+        for(int i = 0; i < 10_000; ++i)
+        {
+            foreach(var monke in monkeys)
+            {
+                while(monke.items.Count != 0)
+                {
+                    (ulong newItem, int monkeyToAdd) = monke.InspectNext2();
+                    monkeys[monkeyToAdd].items.Enqueue(newItem);
+                }
+            }
+        }
+
+        monkeys = monkeys.OrderByDescending(x=> x.total).ToList();
+
+        System.Console.WriteLine(monkeys[0].total);
+        System.Console.WriteLine(monkeys[1].total);
+
+        UInt64 total = (UInt64)monkeys[0].total * (UInt64)monkeys[1].total;
+
+        System.Console.WriteLine(total);
     }
 }
 
 public class Monkey
 {
+    static ulong Module2 = 1;
     int monkey;
-    public Queue<int> items;
-    private Func<int, int> operation;
-    private Func<int, int> test;
+    public Queue<ulong> items;
+    private Func<ulong, ulong> operation;
+    private Func<ulong, int> test;
 
-    public int total;
+    public ulong total;
 
     public Monkey(string monkeyInfo, int _monkey)
     {
@@ -83,17 +113,17 @@ public class Monkey
 
     private void GenerateItems(string itemsLine)
     {
-        items = new Queue<int>(itemsLine.Split(":")[1].Split(",").Select(x=> int.Parse(x.Trim())));
+        items = new Queue<ulong>(itemsLine.Split(":")[1].Split(",").Select(x=> ulong.Parse(x.Trim())));
     }
 
     private void GenerateOperation(string opLine)
     {
         string[] opData = opLine.Split("=")[1].Trim().Split(" ");
-        int constant;
+        ulong constant;
 
         int oldPosition = -1; //If 0, is first argument, if 1, second argument, if 2, both arguments
 
-        ConstantExpression constParam = Expression.Constant(1, typeof(int));
+        ConstantExpression constParam = Expression.Constant(1UL, typeof(ulong));
 
         if(opData[0] == "old") oldPosition = 0;
         if(opData[2] == "old")
@@ -104,13 +134,13 @@ public class Monkey
 
         if(oldPosition != 2)
         {
-            if(int.TryParse(opData[0], out constant));
-            else if(int.TryParse(opData[2], out constant));
+            if(ulong.TryParse(opData[0], out constant));
+            else if(ulong.TryParse(opData[2], out constant));
 
-            constParam = Expression.Constant(constant, typeof(int));
+            constParam = Expression.Constant(constant, typeof(ulong));
         }
 
-        ParameterExpression oldParam = Expression.Parameter(typeof(int), "old");
+        ParameterExpression oldParam = Expression.Parameter(typeof(ulong), "old");
         
         BinaryExpression operationExp = (opData[1], oldPosition) switch
         {
@@ -123,36 +153,48 @@ public class Monkey
             ("*", 2) => Expression.Multiply(oldParam, oldParam)
         };
 
-        operation = Expression.Lambda<Func<int, int>>(operationExp, new ParameterExpression[]{oldParam}).Compile();        
+        operation = Expression.Lambda<Func<ulong, ulong>>(operationExp, new ParameterExpression[]{oldParam}).Compile();        
     }
 
     private void GenerateTest(string[] testLines)
     {
-        int numberToDivide = int.Parse(testLines[0].Split("by")[1].Trim());
+        ulong numberToDivide = ulong.Parse(testLines[0].Split("by")[1].Trim());
+
+        Module2 *= numberToDivide;
 
         int whenTrue = int.Parse(testLines[1].Split("monkey")[1].Trim());
         int whenFalse = int.Parse(testLines[2].Split("monkey")[1].Trim());
 
-        test = (int toTest) => toTest%numberToDivide == 0 ? whenTrue : whenFalse;
+        test = (ulong toTest) => toTest%numberToDivide == 0 ? whenTrue : whenFalse;
     }
 
-    public int Test(int num)
+    public int Test(ulong num)
     {
         return test(num);
     }
 
-    public int ChangeWorryLevel(int worryLevel)
+    public ulong ChangeWorryLevel(ulong worryLevel)
     {
         return operation(worryLevel);
     }
     
-    public (int, int) InspectNext()
+    public (ulong, int) InspectNext1()
     {
         total++;
-        int actualItem = items.Dequeue();
+        ulong actualItem = items.Dequeue();
 
         actualItem = ChangeWorryLevel(actualItem);
         actualItem /=3;
+        return (actualItem, Test(actualItem));
+    }
+
+    public (ulong, int) InspectNext2()
+    {
+        total++;
+        ulong actualItem = items.Dequeue();
+
+        actualItem = ChangeWorryLevel(actualItem);
+        actualItem = actualItem % Module2;
         return (actualItem, Test(actualItem));
     }
 }
