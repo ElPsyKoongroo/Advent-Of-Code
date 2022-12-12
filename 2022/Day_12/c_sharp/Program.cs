@@ -1,11 +1,15 @@
-﻿namespace AdventOfCode;
+﻿using System.Diagnostics;
+
+namespace AdventOfCode;
 public static class Program
 {
     public static void Main(string[] args)
     {
         Day_12 day = new();
+        var st = Stopwatch.StartNew();
         //day.Answer1();
         day.Answer2();
+        System.Console.WriteLine(st.ElapsedMilliseconds / 1000.0);
     }
 }
 
@@ -223,6 +227,13 @@ public class Day_12
                 starts.Select(x=> (new List<KeyValuePair<int,int>>{x}, 0))
             );
         
+        HashSet<KeyValuePair<int, int>> alreadyPassed = new();
+
+        foreach (var item in starts)
+        {
+            alreadyPassed.Add(item);
+        }
+
         while(finalPathLength == -1)
         {
             if(possiblesPath.Count == 0) throw new Exception("No quedan paths posibles");
@@ -238,8 +249,9 @@ public class Day_12
                     finalPathLength = actualPath.Count();
                     break;
                 }
-                if(!possiblesPath.UnorderedItems.Any(x=> x.Element.Contains(cell)))
+                if(!alreadyPassed.Contains(cell))
                 {
+                    alreadyPassed.Add(cell);
                     possiblesPath.Enqueue(
                         actualPath.Append(cell).ToList(),
                         (actualPath.Count+1)*100 + (100-map[cell.Key][cell.Value])
