@@ -28,6 +28,8 @@ public class Day_12
         inputLines = File.ReadAllLines("../AOCinput");
     }
 
+//340282366920938463463374607431768211456
+
     private (KeyValuePair<int, int>, KeyValuePair<int, int>) CreateTable()
     {
         map =
@@ -188,6 +190,10 @@ public class Day_12
                     new KeyValuePair<int, int>[]{start}
                 ), 0
             );
+
+        HashSet<KeyValuePair<int, int>> alreadyPassed = new();
+
+        alreadyPassed.Add(start);
         
         while(finalPathLength == -1)
         {
@@ -204,8 +210,9 @@ public class Day_12
                     finalPathLength = actualPath.Count();
                     break;
                 }
-                if(!possiblesPath.UnorderedItems.Any(x=> x.Element.Contains(cell)))
+                if(!alreadyPassed.Contains(cell))
                 {
+                    alreadyPassed.Add(cell);
                     possiblesPath.Enqueue(
                         actualPath.Append(cell).ToList(),
                         (actualPath.Count+1)*100 + (100-map[cell.Key][cell.Value])
