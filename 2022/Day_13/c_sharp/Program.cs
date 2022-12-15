@@ -3,26 +3,6 @@
 namespace AdventOfCode;
 public static class Program
 {
-    private const string regString =
-            @"^\[" +        //0
-            @"[^\[\]]*" +
-            "(" +           //1
-            "(" +           //3
-            @"(?'Open'\[)" +
-            @"[^\[\]]*" +
-            ")+" +          //3
-            "(" +           //4
-            @"(?'Close-Open'\])" +
-            @"[^\[\]]*" +
-            ")+" +          //4
-            @"[^\[\]]*" +
-            ")*" +          //1
-            @"[^\[\]]*" +
-            "(?" +          //5
-            "(Open)" +
-            "(?!)" +
-            ")" +           //5
-            @"\]";          //0
     public static void Main(string[] args)
     {
         Day_13 day = new();
