@@ -139,7 +139,7 @@ public class Day_14
         int totalSand = 0;
         while(true)
         {
-            Coord actual = new Coord(500, 0);
+            Coord actual = new Coord(x_source, y_source);
             bool end = false;
 
             while(true)
@@ -188,7 +188,7 @@ public class Day_14
         int totalSand = 0;
         while(true)
         {
-            Coord actual = new Coord(500, 0);
+            Coord actual = new Coord(x_source, y_source);
             bool end = false;
 
             while(true)
@@ -215,7 +215,7 @@ public class Day_14
                     actual.X++;
                     continue;
                 }
-                if(actual.X == 500 && actual.Y == 0)
+                if(actual.X == x_source && actual.Y == y_source)
                 {
                     end = true;
                 }
