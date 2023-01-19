@@ -1,10 +1,12 @@
-﻿namespace AdventOfCode;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace AdventOfCode;
 public static class Program
 {
     public static void Main(string[] args)
     {
         Day_14 day = new();
-        day.Answer1();
+        day.Answer2();
     }
 }
 
@@ -23,7 +25,29 @@ public class Day_14
             X = 0;
             Y = 0;
         }
-    } 
+
+        public override bool Equals(object obj)
+        {
+            return (X == (obj as Coord)!.X && Y == (obj as Coord)!.Y);
+        }
+
+        public override int GetHashCode()
+        {
+            return X.GetHashCode() + Y.GetHashCode();
+        }
+    }
+    public class CoordComparer : IEqualityComparer<Coord>
+    {
+        public bool Equals(Coord? x, Coord? y)
+        {
+            return (x.X == y.X && x.Y == y.Y);
+        }
+
+        public int GetHashCode([DisallowNull] Coord obj)
+        {
+            return obj.X.GetHashCode() + obj.Y.GetHashCode();
+        }
+    }
 
 
     string[] testLines;
@@ -35,9 +59,9 @@ public class Day_14
         inputLines = File.ReadAllLines("../AOCinput");
     }
 
-    public void MakeCave(bool test = false)
+    public HashSet<Coord> MakeCave(bool test = false)
     {
-        string[] input = test ? testLines : inputLines;
+        var input = test ? testLines : inputLines;
         
         List<Coord[]> inputCoords = 
             input
@@ -58,15 +82,151 @@ public class Day_14
 
         System.Console.WriteLine($"Minx: {minx}, miny: {miny}");
         System.Console.WriteLine($"Maxx: {maxx}, maxy: {maxy}");
+
+        HashSet<Coord> cave = new(new CoordComparer());
+
+        foreach (var line in inputCoords)
+        {
+            Coord actual = line[0];
+            for(int i = 1; i < line.Count(); i++)
+            {
+                if(line[i].X == actual.X)
+                {
+                    int diff = line[i].Y - actual.Y;
+                    int dir;
+                    if(diff > 0)
+                        dir = 1;
+                    else
+                        dir = -1;
+                    
+                    for(int j = 0; Math.Abs(j) <= Math.Abs(diff); j+=dir)
+                    {
+                        cave.Add(new Coord(actual.X, actual.Y+j));
+                    }
+                    actual = line[i];
+                }
+                else
+                {
+                    int diff = line[i].X - actual.X;
+                    int dir;
+                    if(diff > 0)
+                        dir = 1;
+                    else
+                        dir = -1;
+                    
+                    for(int j = 0; Math.Abs(j) <= Math.Abs(diff); j+=dir)
+                    {
+                        cave.Add(new Coord(actual.X+j, actual.Y));
+                    }
+                    actual = line[i];
+                }
+            }
+        }
+
+        return cave;
     }
 
     public void Answer1()
     {
-        MakeCave(true);
+        const int x_source = 500, y_source = 0;
+
+        var cave = MakeCave();
+
+        int minx = cave.MinBy(x=> x.X)!.X;
+        int maxx = cave.MaxBy(x=> x.X)!.X;
+        int maxy = cave.MaxBy(x=> x.Y)!.Y;
+
+        int totalSand = 0;
+        while(true)
+        {
+            Coord actual = new Coord(500, 0);
+            bool end = false;
+
+            while(true)
+            {
+                if(actual.X < minx || actual.X > maxx || actual.Y == maxy)
+                {
+                    end = true;
+                    break;
+                }
+                if(!cave.Contains(new Coord(actual.X, actual.Y+1)))
+                {
+                    actual.Y++;
+                    continue;
+                }
+                if(!cave.Contains(new Coord(actual.X-1, actual.Y+1)))
+                {
+                    actual.Y++;
+                    actual.X--;
+                    continue;
+                }
+                if(!cave.Contains(new Coord(actual.X+1, actual.Y+1)))
+                {
+                    actual.Y++;
+                    actual.X++;
+                    continue;
+                }
+                cave.Add(actual);
+                break;
+            }
+            if(end)
+                break;
+            totalSand++;
+        }
+
+        Console.WriteLine(totalSand);
     }
 
     public void Answer2()
     {
-        
+        const int x_source = 500, y_source = 0;
+
+        var cave = MakeCave();
+
+        int floor = cave.MaxBy(x=> x.Y)!.Y + 2;
+
+        int totalSand = 0;
+        while(true)
+        {
+            Coord actual = new Coord(500, 0);
+            bool end = false;
+
+            while(true)
+            {
+                if(actual.Y+1 == floor)
+                {
+                    cave.Add(actual);
+                    break;
+                }
+                if(!cave.Contains(new Coord(actual.X, actual.Y+1)))
+                {
+                    actual.Y++;
+                    continue;
+                }
+                if(!cave.Contains(new Coord(actual.X-1, actual.Y+1)))
+                {
+                    actual.Y++;
+                    actual.X--;
+                    continue;
+                }
+                if(!cave.Contains(new Coord(actual.X+1, actual.Y+1)))
+                {
+                    actual.Y++;
+                    actual.X++;
+                    continue;
+                }
+                if(actual.X == 500 && actual.Y == 0)
+                {
+                    end = true;
+                }
+                cave.Add(actual);
+                break;
+            }
+            totalSand++;
+            if(end)
+                break;
+        }
+
+        Console.WriteLine(totalSand);
     }
 }
