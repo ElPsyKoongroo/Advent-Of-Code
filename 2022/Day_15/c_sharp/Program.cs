@@ -94,11 +94,6 @@ public class Day_15
         bool test = false;
         int limit = (test ? 20 : 4000000);
 
-        // bool InRange(KeyValuePair<int, int> pos)
-        // {
-        //     return (pos.Key >= 0 && pos.Value >= 0 && pos.Key <= limit && pos.Value <= limit);
-        // }
-
         bool InRange(int x, int y)
         {
             return (x >= 0 && y >= 0 && x <= limit && y <= limit);
