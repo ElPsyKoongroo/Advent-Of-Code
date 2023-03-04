@@ -25,3 +25,7 @@
 # RUST
 
 target/
+
+# Binaries
+
+**/*.exe
