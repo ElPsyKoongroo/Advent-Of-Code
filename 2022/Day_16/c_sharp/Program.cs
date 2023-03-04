@@ -8,8 +8,9 @@ public class Program
     {
         Day_16 day = new();
 
-        int ans = args.Length != 0 ? int.Parse(args[0]) : 1;
+        int ans = args.Length != 0 ? int.Parse(args[0]) : 2;
 
+        var init = Stopwatch.GetTimestamp();
         switch(ans)
         { 
             case 1:
@@ -22,6 +23,10 @@ public class Program
                 System.Console.WriteLine("No valid input");
                 break;
         }
+
+        var finish = Stopwatch.GetTimestamp();
+
+        System.Console.WriteLine($"{Stopwatch.GetElapsedTime(init, finish).Milliseconds}ms");
     }
 }
 
@@ -67,14 +72,15 @@ public class Day_16
 
         foreach (var actNode in g.nodes)
         {
+            if(actNode.Key != "AA" && actNode.Value == 0) continue;
             nodes.Add(actNode.Key, actNode.Value);
             edges.Add(actNode.Key, new());
         }
 
-        foreach (var actNode in g.nodes)
+        foreach (var actNode in nodes)
         {
             var minimumPath = BFS_MinimumPath(g, actNode.Key);
-            foreach (var node in g.nodes)
+            foreach (var node in nodes)
             {
                 if(node.Key == actNode.Key) continue;
                 int min = minimumPath(node.Key);
@@ -136,7 +142,6 @@ public class Day_16
 
         foreach (var node in g.nodes.Where(x=> !visitedNow.Contains(x.Key)))
         {
-            if(g.nodes[node.Key] == 0) continue;
             int timeToNext = g.edges[actualNode].First(x=> x.Key == node.Key).Value;
             max = Math.Max(
                 max,
@@ -144,6 +149,64 @@ public class Day_16
             );
         }
 
+        return max;
+    }
+
+    private int MaxPressure2(Graph g, string[] nodes, int[] times, HashSet<string> visited, int timeLeft, int released/*, bool first = false*/)
+    {
+        if(timeLeft <= 2) return released;
+
+        int max = released;
+
+        if(times.Any(x=> x == timeLeft))
+        {
+            var gotoNodes = g.nodes.Where(x=> !visited.Contains(x.Key)).ToList();
+            for (int i = 0; i < nodes.Length; ++i)
+            {
+                if(times[i] != timeLeft) continue;
+
+                var actualNode = nodes[i]; //El que ya ha terminado de moverse
+
+                bool hasNext = false;
+
+                foreach (var node in gotoNodes)
+                {
+                    //if(first) System.Console.WriteLine(node.Key);
+                    int timeToNext = g.edges[actualNode].First(x=> x.Key == node.Key).Value;
+
+                    if(timeLeft - timeToNext <= 1) continue;
+
+                    hasNext = true;
+
+                    var visitedNow = visited.Append(node.Key).ToHashSet();
+                    var nextNodes = nodes.ToArray();
+                    var nextTimes = times.ToArray();
+
+                    nextNodes[i] = node.Key;
+                    nextTimes[i] -= (timeToNext + 1);
+
+                    int newReleased = released + node.Value * (timeLeft - timeToNext - 1);
+
+                    max = Math.Max(
+                        max,
+                        MaxPressure2(g, nextNodes, nextTimes, visitedNow, timeLeft, newReleased)
+                    );
+                }
+
+                if (!hasNext)
+                {
+                    times[i] = 0;
+                    max = MaxPressure2(g, nodes, times, visited, timeLeft, released);
+                }
+
+                if(nodes.All(x=> x == "AA"))
+                    break;
+            }
+        }
+        else
+        {
+            max = MaxPressure2(g, nodes, times, visited, times.Max(), released);
+        }
         return max;
     }
 
@@ -155,13 +218,8 @@ public class Day_16
         g = MakeMinimumGraph(g);
 
         System.Console.WriteLine("Inicio");
-        var init = Stopwatch.GetTimestamp();
-
+        
         int total = MaxPressure(g, "AA", new(), 30, 0);
-
-        var finish = Stopwatch.GetTimestamp();
-
-        System.Console.WriteLine(Stopwatch.GetElapsedTime(init, finish));
 
         System.Console.WriteLine(total);
     }
@@ -173,14 +231,11 @@ public class Day_16
 
         g = MakeMinimumGraph(g);
 
+        System.Console.WriteLine(g.nodes.Count);
+
         System.Console.WriteLine("Inicio");
-        var init = Stopwatch.GetTimestamp();
 
-        int total = MaxPressure(g, "AA", new(), 26, 0);
-
-        var finish = Stopwatch.GetTimestamp();
-
-        System.Console.WriteLine(Stopwatch.GetElapsedTime(init, finish));
+        int total = MaxPressure2(g, new string[]{"AA", "AA"}, new int[]{26,26}, new(){"AA"}, 26, 0/*, true*/);
 
         System.Console.WriteLine(total);
     }
