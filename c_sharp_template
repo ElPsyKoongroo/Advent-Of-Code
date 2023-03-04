@@ -1,0 +1,58 @@
+using System.Diagnostics;
+
+namespace AdventOfCode;
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Day_XX day = new();
+
+        int ans = args.Length != 0 ? int.Parse(args[0]) : 1;
+        bool test = args.Length == 2 ? int.Parse(args[1]) == 1 : true;
+
+        string answer = "";
+
+        var init = Stopwatch.GetTimestamp();
+
+        answer = Day_XX.Answer(ans, test);
+
+        var finish = Stopwatch.GetTimestamp();
+
+        System.Console.WriteLine($"Response: {answer}");
+
+        System.Console.WriteLine($"Time: {Stopwatch.GetElapsedTime(init, finish)}");
+    }
+}
+public class Day_XX
+{
+    private static string GetInput(bool test)
+    {
+        return test 
+            ?File.ReadAllText("../AOCtest")
+            :File.ReadAllText("../AOCinput");
+    }
+
+    public static string Answer(int answer, bool test)
+    {
+        return answer switch
+        {
+            1 => Answer1(test),
+            2 => Answer2(test),
+            _ => throw new ArgumentOutOfRangeException("No valid answer required")
+        };
+    }
+
+    private static string Answer1(bool test)
+    {
+        var input = GetInput(test);
+
+        return "";
+    }
+
+    private static string Answer2(bool test)
+    {
+        var input = GetInput(test);
+
+        return "";
+    }
+}
