@@ -1,11 +1,11 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace AdventOfCode;
 public class Program
 {
     public static void Main(string[] args)
     {
-        Day_XX day = new();
+        Day_17 day = new();
 
         int ans = args.Length != 0 ? int.Parse(args[0]) : 1;
         bool test = args.Length == 2 ? int.Parse(args[1]) == 1 : true;
@@ -14,7 +14,7 @@ public class Program
 
         var init = Stopwatch.GetTimestamp();
 
-        answer = Day_XX.Answer(ans, test);
+        answer = Day_17.Answer(ans, test);
 
         var finish = Stopwatch.GetTimestamp();
 
@@ -23,8 +23,52 @@ public class Program
         System.Console.WriteLine($"Time: {Stopwatch.GetElapsedTime(init, finish)}");
     }
 }
-public class Day_XX
+public class Day_17
 {
+    private static HashSet<KeyValuePair<int, int>>[] BaseRocks =
+    {
+        new()
+        {
+            new(0,0),
+            new(1,0),
+            new(2,0),
+            new(3,0),
+        },
+
+        new()
+        {
+            new(1,0),
+            new(0,1),
+            new(1,1),
+            new(2,1),
+            new(1,2),
+        },
+
+        new()
+        {
+            new(0,0),
+            new(0,0),
+            new(2,0),
+            new(2,1),
+            new(2,2),
+        },
+
+        new()
+        {
+            new(0,0),
+            new(0,1),
+            new(0,2),
+            new(0,3),
+        },
+
+        new()
+        {
+            new(0,0),
+            new(1,0),
+            new(0,1),
+            new(1,1),
+        },
+    };
     private static string GetInput(bool test)
     {
         return test 
