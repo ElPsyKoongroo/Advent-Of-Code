@@ -46,7 +46,7 @@ fun secondPart(lines: String) {
 fun secondPartFunctional(lines: String) {
     val maxCals = lines.split("\r\n\r\n")
         .asSequence()
-        .map { set -> set.split("\r\n").sumOf { e ->
+        .map { set -> set.lines().sumOf { e ->
             try {
                 e.trim().toInt()
             } catch (e: NumberFormatException) {
