@@ -31,3 +31,7 @@ target/
 **/*.exe
 **/*.pdb
 **/*.obj
+
+# Kotlin
+.gradle/
+build/
