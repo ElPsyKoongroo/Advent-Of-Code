@@ -1,40 +1,73 @@
-import java.util.Vector
-import kotlin.io.path.Path;
-import kotlin.io.path.readLines
+import kotlin.io.path.Path
 import kotlin.io.path.readText
-
-fun FirstPart(lines: String) {
-    var max_calories = 0;
-    var current_calories = 0;
+import kotlin.collections.sortedDescending;
+fun firstPart(lines: String) {
+    var maxCalories = 0
+    var currentCalories = 0
     for (line in lines.split("\n")) {
         if (line.isBlank()) {
-            if (current_calories > max_calories) {
-                max_calories = current_calories
+            if (currentCalories > maxCalories) {
+                maxCalories = currentCalories
             }
-            current_calories = 0;
-            continue;
-        }
-        current_calories += line.trim().toInt()
-    }
-    println(max_calories)
-}
-
-fun SecondPart(lines: String) {
-    var calories_groups = ArrayList<Int>();
-    var current_calories = 0;
-    for (line in lines.split("\n")) {
-        if (line.isBlank()) {
-            calories_groups.add(current_calories)
-            current_calories = 0
+            currentCalories = 0
             continue
         }
-        current_calories += line.trim().toInt()
+        currentCalories += line.trim().toInt()
     }
-    println(calories_groups.sorted().reversed().take(3).sum())
+    println(maxCalories)
+}
+fun firstPartFunctional(lines: String) {
+    val maxCals = lines.split("\r\n\r\n")
+        .maxOfOrNull { set -> set.split("\r\n").sumOf { e ->
+            try {
+                e.trim().toInt()
+            } catch (e: NumberFormatException) {
+                0
+            }
+        }};
+
+    println(maxCals)
+}
+
+
+fun secondPart(lines: String) {
+    val caloriesGroups = ArrayList<Int>()
+    var currentCalories = 0
+    for (line in lines.split("\n")) {
+        if (line.isBlank()) {
+            caloriesGroups.add(currentCalories)
+            currentCalories = 0
+            continue
+        }
+        currentCalories += line.trim().toInt()
+    }
+    println(caloriesGroups.sorted().reversed().take(3).sum())
+}
+fun secondPartFunctional(lines: String) {
+    val maxCals = lines.split("\r\n\r\n")
+        .asSequence()
+        .map { set -> set.split("\r\n").sumOf { e ->
+            try {
+                e.trim().toInt()
+            } catch (e: NumberFormatException) {
+                0
+            }
+        }}.toList()
+        .sortedDescending()
+        .take(3)
+        .sum();
+
+
+
+    println(maxCals)
 }
 
 fun main(args: Array<String>) {
-    val lines = Path("../AOCinput").readText();
-    FirstPart(lines);
-    SecondPart(lines);
+    val lines = Path("../AOCinput").readText()
+    firstPart(lines)
+    firstPartFunctional(lines)
+
+    secondPart(lines)
+    secondPartFunctional(lines)
+
 }
