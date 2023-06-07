@@ -41,7 +41,7 @@ fun secondPart(lines: String) {
         }
         currentCalories += line.trim().toInt()
     }
-    println(caloriesGroups.sorted().reversed().take(3).sum())
+    println(caloriesGroups.sortedDescending().take(3).sum())
 }
 fun secondPartFunctional(lines: String) {
     val maxCals = lines.split("\r\n\r\n")
@@ -56,8 +56,6 @@ fun secondPartFunctional(lines: String) {
         .sortedDescending()
         .take(3)
         .sum();
-
-
 
     println(maxCals)
 }
