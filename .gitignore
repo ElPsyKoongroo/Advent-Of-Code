@@ -35,3 +35,6 @@ target/
 # Kotlin
 .gradle/
 build/
+
+# Zig
+**/zig-cache
