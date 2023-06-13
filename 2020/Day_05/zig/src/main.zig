@@ -5,7 +5,6 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // Open the file
     const file = try std.fs.cwd().openFile("../AOCinput", .{});
     defer file.close();
 
