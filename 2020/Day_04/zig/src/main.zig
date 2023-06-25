@@ -179,8 +179,8 @@ fn Answer2(file: []const u8) void {
                         const values = info[4..];
                         if(values.len != 9) break;
 
-                        actualPass.pid = blk: for (values) |v| {
-                            if(v < '0' or v > '9') break :blk false;
+                        actualPass.pid = for (values) |v| {
+                            if(v < '0' or v > '9') break false;
                         } else true;
                     },
                     7 => {actualPass.cid=true;},

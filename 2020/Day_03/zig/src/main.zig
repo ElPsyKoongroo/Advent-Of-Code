@@ -43,7 +43,7 @@ fn Answer1(file: []const u8, allocator: std.mem.Allocator) void {
 }
 
 fn Answer2(file: []const u8, allocator: std.mem.Allocator) void {
-        var array = std.ArrayList([]const u8).init(allocator);
+    var array = std.ArrayList([]const u8).init(allocator);
     defer _ = array.deinit();
 
     var it = std.mem.splitSequence(u8, file, "\n");
