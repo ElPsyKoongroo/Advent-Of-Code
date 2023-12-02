@@ -16,7 +16,7 @@
 
 **/AOCinput.txt
 **/AOCtest.txt
-
+**/input.txt
 
 #VS Code
 
@@ -27,7 +27,7 @@
 target/
 
 # Binaries
-
+**/*.bin
 **/*.exe
 **/*.pdb
 **/*.obj

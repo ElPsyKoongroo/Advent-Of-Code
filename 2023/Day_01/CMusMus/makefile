@@ -1,4 +1,4 @@
-EXE = main
+EXE = main.bin
 
 FLAGS = -std=c++23
 OPT_FLAGS = -march=native -Ofast -funroll-loops
