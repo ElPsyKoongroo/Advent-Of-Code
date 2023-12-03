@@ -13,7 +13,7 @@
 #include <ranges>
 namespace rv = std::ranges::views;
 
-std::string path = "input.txt";
+std::string path = "AOCinput.txt";
 
 std::vector<std::string> split(std::string input, std::string delimiter = "\n"){
     std::vector<std::string> lines;
