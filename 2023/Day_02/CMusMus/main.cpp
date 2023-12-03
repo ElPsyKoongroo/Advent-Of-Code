@@ -40,6 +40,7 @@ std::vector<std::string> read(std::string path){
     char* buffer = new char[fileSize];
     f.read(buffer, fileSize);
     std::string strbuff = buffer;
+    delete buffer;
     return split(strbuff);
 }
 
@@ -82,11 +83,32 @@ int one(std::vector<std::string> input){
 }
 
 int two(std::vector<std::string> input){
-    return 0;
+    int goods = 0;
+    for( auto[ idx,line] : rv::enumerate(input) ) {
+        bool valid = true;
+        line = line.substr(line.find(":"));
+        auto subGames = split(line, ";"); 
+        rgb["red"] = 0;
+        rgb["green"] = 0;
+        rgb["blue"] = 0;
+        for(auto& subGame : subGames){ // Game 1 : {...}
+            auto buckets = split(subGame, ",");
+            for (auto& bucket : buckets){ // {red green blue}
+                std::string buffer;
+                std::ranges::copy_if(bucket, std::back_inserter(buffer), isNum);
+                int value = std::stoi(buffer);
+                buffer.clear();
+                std::ranges::copy_if(bucket, std::back_inserter(buffer), isAlpha);
+                rgb[buffer] = std::max(value, rgb[buffer]);
+            }
+        }
+        goods += (rgb["red"]*rgb["green"]*rgb["blue"]);    
+    }
+    return goods;
 }
 
 int main(){
     std::vector<std::string> v = read(path);
     std::cout << one(v) << "\n";
-    //std::cout << two(v);
+    std::cout << two(v)<< "\n";
 }
