@@ -11,6 +11,7 @@
 #include <utility>
 #include <set>
 #include <ranges>
+#include <map>
 namespace rv = std::ranges::views;
 
 std::string path = "input.txt";
@@ -81,13 +82,11 @@ int one(std::vector<std::string> input) {
 }
 
 int two(std::vector<std::string> input) {
-    std::unordered_map<int, int> boletos;
-    boletos[1] = 1;
+    std::map<int, int> boletos;
     int size = input.size();
-    while (size--) {
-        boletos[size] = 1;
+    for ( auto i : rv::iota(1,size+1) ) {
+        boletos[i] = 1;
     }
-    int count = 0;
     int idx = 1;
     for (auto& line : input) {
         int boletitos = boletos[idx];
@@ -112,10 +111,10 @@ int two(std::vector<std::string> input) {
             token.clear();
             iss >> token;
         }
-        
         idx++;
     }
 
+    int count = 0;
     for (auto [boleto, cantidad] : boletos) {
         count += cantidad;
     }
@@ -126,5 +125,5 @@ int main()
 {
     auto v = read(path);
     std::cout << one(v) << "\n";
-    std::cout << two(v);
+    std::cout << two(v) << "\n";
 }
