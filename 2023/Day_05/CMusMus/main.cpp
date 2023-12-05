@@ -12,12 +12,13 @@
 #include <set>
 #include <ranges>
 #include <map>
+
 namespace rv = std::ranges::views;
 
-using u64 = u_int64_t;
+using u64 = uint64_t;
 
 struct Map {
-    u64 dest,source,length;
+    u64 dest, source, length;
 };
 std::string path = "input.txt";
 std::vector<u64> seeds;
@@ -53,19 +54,19 @@ bool isNum(std::string in) {
         std::stoull(in);
         return true;
     }
-    catch(std::exception e){
+    catch (std::exception e) {
         return false;
     }
 }
-auto toU64 = [](std::string num){ return std::stoull(num) ;};
-void parse(std::vector<std::string> input){
-    auto listaSeeds = split(input[0].substr(input[0].find(":")));
-    std::ranges::copy(listaSeeds | rv::transform(toU64) , std::back_inserter(seeds) );
+auto toU64 = [](std::string num) { return std::stoull(num); };
+void parse(std::vector<std::string> input) {
+    auto listaSeeds = split(input[0].substr(input[0].find(":")+2), " ");
+    std::ranges::copy(listaSeeds | rv::transform(toU64), std::back_inserter(seeds));
 
-    for(auto& in : input | rv::drop(1)){
+    for (auto& in : input | rv::drop(1) ) {
         sections.push_back(std::vector<Map>());
         auto nums = split(in);
-        for(auto& num : nums | rv::drop(1)){
+        for (auto& num : nums | rv::drop(1) ) {
             auto mapita = Map();
             std::stringstream iss(num);
             std::string token;
@@ -82,18 +83,32 @@ void parse(std::vector<std::string> input){
     }
 }
 
-int one(std::vector<std::string> input) {
-
+int one() {
+    u64 minimal = UINT64_MAX;
+    for ( auto& seed : seeds ) {
+        u64 modifiedSeed = seed;
+        for (auto& section : sections) {
+            for (auto& map : section) {
+                auto diff = modifiedSeed - map.source;
+                if (diff >= 0 && diff < map.length) {
+                    modifiedSeed = diff + map.dest;
+                    break;
+                }
+            }
+        }
+        minimal = std::min(minimal, modifiedSeed);
+    }
+    return minimal;
 }
 
 int two(std::vector<std::string> input) {
-
+    return 0;
 }
 
 int main()
 {
     auto v = read(path);
     parse(v);
-    std::cout << one(v) << "\n";
+    std::cout << one() << "\n";
     std::cout << two(v) << "\n";
 }
