@@ -120,13 +120,8 @@ int LadderRankJoker(std::map<char,int>& hand){
                 return 4;   // [AAA][K][Q]
             }
             else {
-                auto Js = std::count_if( hand.begin(), hand.end(), [](std::pair<char,int> key_val){
-                    return key_val.first == 'J';
-                });
-                if( Js == 1 ) return 5;
-                else if( Js == 2 ) return 6;
-                return 3;
-                //return Js == 0 ? 3 : (Js == 1) ? 5 : 6; // [AA][KK][Q]
+                if(hand.find('J') != hand.end()) return hand['J'] == 1 ? 5 : 6;
+                return 3; // [AA][KK][Q]
             }  
         }
         case 4 : {
@@ -197,16 +192,16 @@ int two(std::vector<Player>& datos) {
     }
     uint64_t playerCount = datos.size();
     for ( auto [tempRank, players ] : rv::reverse(ladderRanks)){
-        if( players.size() != 1){
-            std::sort(players.begin(),players.end() , [](Player& a, Player& b){
-                return !std::lexicographical_compare(a.cards.begin(),a.cards.end(),
-                b.cards.begin(),b.cards.end() , customCompareJoker);
-            });
-        }
-
+        std::stable_sort(players.begin(),players.end() , [](const Player& a, const Player& b){
+            return !std::lexicographical_compare(a.cards.begin(),a.cards.end(),
+            b.cards.begin(),b.cards.end() , customCompareJoker);
+        });
+        // stable -> 248189989
         for (auto& player : players) { 
+            //std::cout << player.cards << "\n";
             count += (player.bid * playerCount--); 
         } 
+        //std::cout << "------------------------\n";
     }
     return count;
 }
