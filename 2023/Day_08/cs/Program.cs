@@ -74,17 +74,13 @@ class Program
             List<(string pos, int pasos)> finalsZ = [];
             int weno = 0;
             while(true) {
-                if(actualPos[2] == 'Z') {
-                    if(!finalsZ.Any(x=> x.pos == actualPos && x.pasos == i)) {
-                        finalsZ.Add((actualPos, i));
-                    } else {
-                        weno = counter;
-                        break;
-                    }
-                }
                 actualPos = movements[i] == 'L' ? map[actualPos].Left : map[actualPos].Right;
                 i = (i+1)%max;
                 counter++;
+                if(actualPos[2] == 'Z') {
+                    weno = counter;
+                    break;
+                }
             }
             ints.Add(weno);
         }
