@@ -16,7 +16,7 @@
 
 namespace rv = std::ranges::views;
 using pairlist = std::initializer_list<std::pair<int,int>>;
-std::string path = "input.txt";
+std::string path = "inputbase.txt";
 
 auto toInt = [](std::string num) { return std::stoull(num); };
 
@@ -53,8 +53,10 @@ Data LPipe { 'L' , dir::N, dir::E};
 Data JPipe { 'J' , dir::N, dir::W}; 
 Data _7Pipe { '7' , dir::S, dir::W}; 
 Data FPipe { 'F' , dir::S, dir::E}; 
+
 std::vector<Data> dataPipes = {SPipe, HPipe, VPipe, LPipe,JPipe,_7Pipe,FPipe};
 std::vector<Pipe> loop;
+
 std::vector<std::string> split(std::string input, std::string delimiter = "\n") {
     std::vector<std::string> lines;
     size_t pos = 0;
@@ -140,7 +142,7 @@ int one(std::vector<std::string> input) {
         
         switch(idx){
             case 0:{ // EAST
-               // funcion() if(next == '-') loop.push_back(Pipe{HPipe, newX , newY});
+                if(next == '-') loop.push_back(Pipe{HPipe, newX , newY});
                 else if(next == 'J') loop.push_back(Pipe{JPipe, newX , newY});
                 else if(next == '7') loop.push_back(Pipe{_7Pipe, newX , newY});
                 actual = dir::W;
@@ -180,20 +182,22 @@ int one(std::vector<std::string> input) {
     
     return std::ceil(loop.size()/2);
 }
+
 struct Coord{
-    int x , y;
+    int x,y;
 };
 
-void expansion(Coord c, bool& isOutside , std::vector<std::string>& square, std::vector<Coord>& visited){
-    if(c.x < 0 || c.x >= square.front().size() || c.y < 0 || c.y >= square.size()) { isOutside = true; return; }
-    if(square[c.y][c.x] == '.') visited.push_back(c) ;
-    expansion(Coord{c.x + 1, c.y} , isOutside , square , visited );
-}
+void dfs(Coord c, std::vector<std::string>& square , std::vector<Coord>& group) {
+    if (c.y < 0 || c.y >= square.size() || c.x < 0 || c.x >= square[0].size() || square[c.y][c.x] != '.')
+        return;
 
-void refresh ( std::vector<std::string>& square, int x , int y ){
-    std::vector<Coord> visited;
-    bool isOutside = false;
-    expansion(Coord{x,y}, isOutside, square, visited );
+    square[c.y][c.x] = 'X'; // Mark visited
+    group.emplace_back(Coord{ c.x, c.y } );
+
+    dfs(Coord{c.x + 1, c.y}, square, group);
+    dfs(Coord{c.x - 1, c.y}, square, group);
+    dfs(Coord{c.x, c.y + 1}, square, group);
+    dfs(Coord{c.x, c.y - 1}, square, group);
 }
 
 int two(std::vector<std::string> input) {
@@ -212,19 +216,21 @@ int two(std::vector<std::string> input) {
         square.push_back(hashStr);
     }
 
-    for(auto [y,line] : square | rv::enumerate){
-        int x = line.find('.');
-        if(x == std::string::npos) continue;
-        refresh(square, x , y);
+    
+    auto squareCopy = square;
+    std::vector<std::vector<Coord>> groups;
+    for(auto [y,line] : squareCopy | rv::enumerate){
+        auto x = std::find(line.begin(), line.end(), '.');
+        while(x != line.end()){
+            std::vector<Coord> group;
+            dfs(Coord{(int)std::distance(line.begin(),x),(int)y} , squareCopy, group);
+            groups.push_back(group);
+            x = std::find(x+1, line.end(), '.');
+        }
     }
 
     return std::ranges::count(square | std::views::join, 'I');
 }
-// 1 -> 5
-
-// 4 -> 9
-// 0 -> drop(4) -> 4 -> take(9-4+1) 
-// 0 -> drop(1) -> 1 -> take(5-1+1) -> -> 5 
 
 int main()
 {
