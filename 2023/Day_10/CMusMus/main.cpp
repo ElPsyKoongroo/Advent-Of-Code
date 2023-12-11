@@ -16,19 +16,8 @@
 
 namespace rv = std::ranges::views;
 using pairlist = std::initializer_list<std::pair<int,int>>;
-std::string path = "inputbase.txt";
+std::string path = "input.txt";
 
-auto toInt = [](std::string num) { return std::stoull(num); };
-
-bool isNum(std::string str) {
-    try {
-        std::stoi(str);
-        return true;
-    }
-    catch (std::exception e) {
-        return false;
-    }
-}
 enum class dir {
     N,
     S,
@@ -36,6 +25,7 @@ enum class dir {
     E,
     None
 };
+
 struct Data{
     char type;
     dir source;
@@ -46,6 +36,11 @@ struct Pipe{
     Data val;
     int x,y;
 };
+
+struct Coord{
+    int x,y;
+};
+
 Data SPipe { 'S' , dir::None, dir::None}; 
 Data HPipe { '-' , dir::E, dir::W}; 
 Data VPipe { '|' , dir::N, dir::S}; 
@@ -83,9 +78,6 @@ std::vector<std::string> read(std::string path) {
 }
 
 std::pair<dir,Pipe> nextPipe(dir actDir, Pipe actPipe, std::vector<std::string> input){
-    if(actPipe.y == 102 && actPipe.x == 3){
-        std::cout << "a\n";
-    }
     dir nextDir = actDir == actPipe.val.source ? actPipe.val.dest : actPipe.val.source;
     switch(nextDir){
         case dir::E : {
@@ -146,6 +138,7 @@ int one(std::vector<std::string> input) {
                 else if(next == 'J') loop.push_back(Pipe{JPipe, newX , newY});
                 else if(next == '7') loop.push_back(Pipe{_7Pipe, newX , newY});
                 actual = dir::W;
+                SPipe.source = dir::E;
                 break;
             }
             case 1:{ // NORTH
@@ -153,12 +146,14 @@ int one(std::vector<std::string> input) {
                 else if(next == '7') loop.push_back(Pipe{_7Pipe, newX , newY});
                 else if(next == 'F') loop.push_back(Pipe{FPipe, newX , newY});
                 actual = dir::S;
+                SPipe.source = dir::N;
                 break;
             }
             case 2:{ // WEST
                 if(next == '-') loop.push_back(Pipe{HPipe, newX , newY});
                 else if(next == 'L') loop.push_back(Pipe{LPipe, newX , newY});
                 else if(next == 'F') loop.push_back(Pipe{FPipe, newX , newY});
+                SPipe.source = dir::W;
                 actual = dir::E;
                 break;
             }
@@ -167,6 +162,7 @@ int one(std::vector<std::string> input) {
                 else if(next == 'L') loop.push_back(Pipe{LPipe, newX , newY});
                 else if(next == 'J') loop.push_back(Pipe{JPipe, newX , newY});
                 actual = dir::N;
+                SPipe.source = dir::S;
                 break;
             }
         }
@@ -179,13 +175,9 @@ int one(std::vector<std::string> input) {
         actual = newDir;
         pipe = loop.back().val.type;
     }
-    
+    SPipe.dest = actual;
     return std::ceil(loop.size()/2);
 }
-
-struct Coord{
-    int x,y;
-};
 
 void dfs(Coord c, std::vector<std::string>& square , std::vector<Coord>& group) {
     if (c.y < 0 || c.y >= square.size() || c.x < 0 || c.x >= square[0].size() || square[c.y][c.x] != '.')
@@ -200,8 +192,72 @@ void dfs(Coord c, std::vector<std::string>& square , std::vector<Coord>& group) 
     dfs(Coord{c.x, c.y - 1}, square, group);
 }
 
+bool counts(Coord& c, std::vector<std::string>& square , int minX, int minY){
+    if (c.y+1 < 0 || c.y+1 >= square.size())
+        return false; // I
+    auto newc= Coord{c.x,c.y+1};
+    int count = 0;
+    int size = square.size();
+    while (newc.y < size){
+        if(square[newc.y][newc.x] == '-'){
+            count++;
+            newc.y++;
+            continue;
+        }
+        else if(square[newc.y][newc.x] == 'L'){
+            newc.y++;
+            while (!(square[newc.y][newc.x] == 'F' || square[newc.y][newc.x] == '7')) newc.y++;
+            if(square[newc.y][newc.x]== '7') count++;
+            newc.y++;
+            continue;
+        }
+        else if(square[newc.y][newc.x] == 'J'){
+            newc.y++;
+            while (!(square[newc.y][newc.x] == 'F' || square[newc.y][newc.x] == '7')) newc.y++;
+            if(square[newc.y][newc.x] == 'F') count++;
+            newc.y++;
+            continue;
+        }
+        else if(square[newc.y][newc.x] == 'F'){
+            newc.y++;
+            while (!(square[newc.y][newc.x] == 'L' || square[newc.y][newc.x] == 'J')) newc.y++;
+            if(square[newc.y][newc.x] == 'J') count++;
+            newc.y++;
+            continue;
+        }
+        else if(square[newc.y][newc.x] == '7'){
+            newc.y++;
+            while (!(square[newc.y][newc.x] == 'L' || square[newc.y][newc.x] == 'J')) newc.y++;
+            if(square[newc.y][newc.x]== 'L') count++;
+            newc.y++;
+            continue;
+        }
+        newc.y++;
+    }
+
+    return count % 2 == 1;
+
+}
+
 int two(std::vector<std::string> input) {
     uint64_t count = 0;
+
+    for(auto [idy,line] : input | rv::enumerate){
+        for(auto [idx,ch] : line | rv::enumerate){
+            int x = idx;
+            int y = idy;
+            auto it = std::find_if(loop.begin() , loop.end() , [x,y](Pipe& p){ return p.x == x && p.y == y; });
+            if(it == loop.end()){
+                ch = '.';
+            }
+        }
+    }
+
+    auto it = *std::find_if(dataPipes.begin()+1 ,dataPipes.end(), [](Data& d) { 
+        return ( d.source == SPipe.source || d.dest == SPipe.source )
+                && ( d.source == SPipe.dest || d.dest == SPipe.dest ) ; 
+    });
+    input[loop.front().y][loop.front().x] = it.type;
 
     int minX = std::ranges::min_element(loop, std::less{} , &Pipe::x)->x;
     int maxX = std::ranges::max_element(loop,std::less{} , &Pipe::x)->x;
@@ -211,12 +267,9 @@ int two(std::vector<std::string> input) {
     std::vector<std::string> square;
     for(auto& line : input | rv::drop(minY) | rv::take(maxY-minY+1)){
         auto newLine = line.substr(minX, maxX - minX + 1);
-        auto hashLine = rv::transform(newLine , [](char c){ return c != '.' ? '#' : '.'; });
-        std::string hashStr = std::string(hashLine.begin(),hashLine.end());
-        square.push_back(hashStr);
+        square.push_back(newLine);
     }
 
-    
     auto squareCopy = square;
     std::vector<std::vector<Coord>> groups;
     for(auto [y,line] : squareCopy | rv::enumerate){
@@ -228,14 +281,22 @@ int two(std::vector<std::string> input) {
             x = std::find(x+1, line.end(), '.');
         }
     }
+    
 
-    return std::ranges::count(square | std::views::join, 'I');
+
+
+    for (auto& group : groups){
+        if(counts(group.front(), square , minX, minY)){
+            count+= group.size();
+        }
+    }
+    return count;
 }
 
 int main()
 {
     auto v = read(path);
-    //parse(v);
     std::cout << one(v) << "\n";
     std::cout << two(v) << "\n";
+    return 0;
 }
