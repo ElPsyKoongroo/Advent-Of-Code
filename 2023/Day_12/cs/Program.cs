@@ -65,9 +65,14 @@ class Program
 
     static int CountPossibilites(Span<State> actState, ReadOnlySpan<int> info, ReadOnlySpan<int> unknowns, int actUnknown) {
         if (actUnknown == unknowns.Length) {
+            // if(actState.ToArray().Count( x => x == State.Bad ) != info.ToArray().Sum()) return 0;
             return CheckState(actState, info) ? 1 : 0;
         }
         
+        if(actState.ToArray().Count( x => x == State.Bad ) > info.ToArray().Sum()) {
+            return 0;
+        }
+
         actState[unknowns[actUnknown]] = State.Good;
         int actTotal = CountPossibilites(actState, info, unknowns, actUnknown+1);
         actState[unknowns[actUnknown]] = State.Bad;
