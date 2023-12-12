@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace cs;
 
@@ -17,12 +18,18 @@ class Program
         _ => State.Unknown,
     };
 
+    static char CharState(State s) => s switch {
+        State.Good => '.',
+        State.Bad => '#',
+        _ => '?',
+    };
+
     record Row(State[] States, int[] Info);
 
     static void Main(string[] args)
     {
-        var path = args.FirstOrDefault("../AOCtest");
-        // Console.WriteLine(Sol1(path));
+        var path = args.FirstOrDefault("../AOCinput");
+        Console.WriteLine(Sol1(path));
         Console.WriteLine(Sol2(path));
     }
 
@@ -48,66 +55,62 @@ class Program
             ).ToArray();
     }
 
-    static int Sol1(string path) {
+    static long Sol1(string path) {
         var input = ParseInput(path);
         System.Console.WriteLine("Go");
-        int total = 0;
+        long total = 0;
 
         foreach(var row in input) {
             var actualState = 
-                row.States.ToArray().AsSpan();
-            var info = row.Info.AsSpan();
-            var unknowns = row.States.Select((x, i)=> (x,i)).Where(x=> x.x == State.Unknown).Select(x=> x.i).ToArray().AsSpan();
-            total += CountPossibilites(actualState, info, unknowns, 0);
+                row.States;
+            var info = row.Info;
+            Dictionary<(string, string), long> cache = [];
+            total += CountPossibilites(actualState, info, cache);
         }
         return total;
     }
 
-    static int CountPossibilites(Span<State> actState, ReadOnlySpan<int> info, ReadOnlySpan<int> unknowns, int actUnknown) {
-        if (actUnknown == unknowns.Length) {
-            // if(actState.ToArray().Count( x => x == State.Bad ) != info.ToArray().Sum()) return 0;
-            return CheckState(actState, info) ? 1 : 0;
+    static long CountPossibilites(State[] actState, int[] info, Dictionary<(string, string), long> cache) {
+
+        if(actState.Length == 0) {
+            return info.Length == 0 ? 1 : 0;
         }
-        
-        if(actState.ToArray().Count( x => x == State.Bad ) > info.ToArray().Sum()) {
-            return 0;
+        if(info.Length == 0) {
+            return actState.Contains(State.Bad) ? 0 : 1;
+        }
+        long total = 0;
+
+        var key = (string.Concat(actState.Select(CharState)), string.Concat(info.Select(x=> x.ToString())));
+
+        if(cache.TryGetValue(key, out long v)) {
+            return v;
         }
 
-        actState[unknowns[actUnknown]] = State.Good;
-        int actTotal = CountPossibilites(actState, info, unknowns, actUnknown+1);
-        actState[unknowns[actUnknown]] = State.Bad;
-        actTotal += CountPossibilites(actState, info, unknowns, actUnknown+1);
+        if(actState[0] != State.Bad) {
+            total += CountPossibilites(actState[1..], info, cache);
+        }
 
-        return actTotal;
-    }
-
-    static bool CheckState(Span<State> actState, ReadOnlySpan<int> info) {
-        int actInfo = 0;
-        for(int i = 0; i < actState.Length; ++i) {
-            if(actState[i] == State.Good) continue;
-            int total = 1;
-            i++;
-            for(; i < actState.Length; ++i) {
-                if(actState[i] == State.Good) break;
-                total++;
+        if(actState[0] != State.Good) {
+            int blk = info[0];
+            if(blk <= actState.Length && actState[0..blk].All(x=> x != State.Good) && (actState.Length == blk || actState[blk] != State.Bad)) {
+                total += CountPossibilites([..actState.Skip(blk+1)], info[1..], cache);
             }
-            if(info.Length == actInfo) return false;
-            if(info[actInfo++] != total) return false;
         }
-        return info.Length == actInfo;
+        cache.Add(key, total);
+        return total;
     }
 
-    static int Sol2(string path) {
+    static long Sol2(string path) {
         var input = ParseInput2(path);
-        System.Console.WriteLine("Go");
-        int total = 0;
+        Console.WriteLine("Go");
+        long total = 0;
 
         foreach(var row in input) {
             var actualState = 
-                row.States.ToArray().AsSpan();
-            var info = row.Info.AsSpan();
-            var unknowns = row.States.Select((x, i)=> (x,i)).Where(x=> x.x == State.Unknown).Select(x=> x.i).ToArray().AsSpan();
-            total += CountPossibilites(actualState, info, unknowns, 0);
+                row.States;
+            var info = row.Info;
+            Dictionary<(string, string), long> cache = [];
+            total += CountPossibilites(actualState, info, cache);
         }
         return total;
     }
