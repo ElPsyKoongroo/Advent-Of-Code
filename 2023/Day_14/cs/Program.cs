@@ -70,6 +70,7 @@ class Program
         //     Console.WriteLine();
         // }
 
+
         int total = 0;
         var totalRows = input.Length;
         for(int i = 0; i < totalRows; ++i) {
