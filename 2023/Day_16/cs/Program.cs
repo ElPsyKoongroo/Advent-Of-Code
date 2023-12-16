@@ -128,10 +128,12 @@ class Program
 
         (int x,int y,int dx,int dy)[] inits = [..topRow, ..bottomRow, ..leftRow, ..rightRow];
 
-        foreach(var init in inits) {
+        int[] maxes = Enumerable.Repeat(0, inits.Length).ToArray();
+
+        Parallel.For(0, inits.Length, new ParallelOptions(){ MaxDegreeOfParallelism=8} ,i => {
 
             Queue<(int X, int Y, int dX, int dY)> beams = [];
-            beams.Enqueue((init.x,init.y,init.dx,init.dy));
+            beams.Enqueue((inits[i].x,inits[i].y,inits[i].dx,inits[i].dy));
 
             HashSet<(int X, int Y, int dX, int dY)> possitionsPassed = [];
 
@@ -198,14 +200,14 @@ class Program
                     }
                 }
             }
-            maxActual = Math.Max(maxActual, possitionsPassed.Select(x=> (x.X, x.Y)).Distinct().Count());
-        }
+            maxes[i] = possitionsPassed.Select(x=> (x.X, x.Y)).Distinct().Count();
+        });
 
         var fin = Stopwatch.GetTimestamp();
 
         Console.WriteLine(Stopwatch.GetElapsedTime(ini, fin).Duration());
 
-        return maxActual;
+        return maxes.Max();
     }
 
 }
