@@ -1,8 +1,19 @@
 ﻿
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace cs;
+
+public static class Extensions {
+        public static void Dump<T>(this T obj, bool indent = false)
+    {
+        Console.WriteLine(
+        JsonConvert.SerializeObject(obj, indent ? Formatting.Indented : Formatting.None,
+            new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore})
+        );
+    }
+}
 
 record Instruction(char Direction, int Amountm);
 
@@ -11,8 +22,8 @@ class Program
     static readonly Regex regex = new(@"(\w) (\d+) \(#(\w+)\)", RegexOptions.Compiled);
     static void Main(string[] args)
     {
-        string path = args.FirstOrDefault("../AOctest");
-        // Console.WriteLine(Sol1(path));
+        string path = args.FirstOrDefault("../AOCtest");
+        Console.WriteLine(Sol1(path));
         Console.WriteLine(Sol2(path));
     }
 
@@ -116,13 +127,44 @@ class Program
         return trench;
     }
 
-    static int Sol1(string path)
+    static long Sol1(string path)
     {
         var input = ParseInput(path);
 
-        var t = GenerateTrench(input);
+        //BruteFroce
+        // var total = GenerateTrench(input).Count;
 
-        return t.Count;
+        //Maths
+        //Pick's Theorem => Area = I + B/2 -1
+        Dictionary<char,(int, int)> dirs = new() {
+            {'U', (0,-1)},
+            {'D', (0,1)},
+            {'L', (-1,0)},
+            {'R', (1,0)},
+        };
+
+        List<(int X, int Y)> points = [(0,0)];
+
+
+        long b = 0;
+
+        foreach(var (d, c) in input) {
+            var (dX, dY) = dirs[d];
+            var (actX,actY) = points[^1];
+            points.Add((actX + dX * c, actY + dY * c));
+            b += c;
+        }
+
+        // points.Dump(true);
+
+        long area = Math.Abs(
+            Enumerable.Range(0, points.Count).Select( i=> 
+                points[i].Y * (points[i == 0 ? ^1 : i-1 ].X - points[(i+1) % points.Count].X)
+            ).Sum()) / 2;
+
+        long i = area - (b / 2) + 1;
+
+        return i + b;
     }
 
     static Instruction[] ParseInput2(string path) =>
@@ -138,17 +180,44 @@ class Program
                 '1' => 'D',
                 '2' => 'L',
                 '3' => 'U',
+                _ => 'e'
             };
 
             return new Instruction(dir, num);
         }).ToArray();
 
-    static int Sol2(string path)
+    static long Sol2(string path)
     {
-        var input = ParseInput(path);
+        var input = ParseInput2(path);
+
+        Dictionary<char,(int, int)> dirs = new() {
+            {'U', (0,-1)},
+            {'D', (0,1)},
+            {'L', (-1,0)},
+            {'R', (1,0)},
+        };
+
+        List<(long X, long Y)> points = [(0,0)];
 
 
+        long b = 0;
 
-        return -1;
+        foreach(var (d, c) in input) {
+            var (dX, dY) = dirs[d];
+            var (actX,actY) = points[^1];
+            points.Add((actX + dX * c, actY + dY * c));
+            b += c;
+        }
+
+        // points.Dump(true);
+
+        long area = Math.Abs(
+            Enumerable.Range(0, points.Count).Select( i=> 
+                points[i].Y * (points[i == 0 ? ^1 : i-1 ].X - points[(i+1) % points.Count].X)
+            ).Sum()) / 2;
+
+        long i = area - (b / 2) + 1;
+
+        return i + b;
     }
 }
