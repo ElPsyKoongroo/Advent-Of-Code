@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using RegExtract;
@@ -26,8 +28,8 @@ class Program
     static void Main(string[] args)
     {
         string path = args.FirstOrDefault("../AOCtest");
-        Console.WriteLine(Sol1(path));
-        // Console.WriteLine(Sol2(path));
+        // Console.WriteLine(Sol1(path));
+        Console.WriteLine(Sol2(path));
     }
 
     internal static readonly char[] symbols = ['&', '%'];
@@ -180,10 +182,18 @@ class Program
     static long Sol2(string path) {
         var modules = ParseInput(path);
 
-        long highPulses = 0;
-        long lowPulses = 0;
+        var feed = modules.Single(x=> x.Post.Contains("rx")).Name; 
 
-        long totalIters = 0;
+        var seenNames = modules.Where(X=> X.Post.Contains(feed)).Select(x=> x.Name);
+
+        Dictionary<string, int> seen = [];
+        Dictionary<string, int> cycles_lenght = [];
+
+        foreach(var n in seenNames) {
+            seen.Add(n, 0);
+        }
+
+        int totalIters = 0;
         bool exit = false;
 
         while(!exit) {
@@ -192,7 +202,6 @@ class Program
             Queue<(string nodeFrom, string nodeTo, bool signal)> signals = [];
             // Console.WriteLine("{0} - {2} -> {1}","buttom", "broadcaster", false);
             signals.Enqueue(("buttom", "broadcaster", false));
-            ++lowPulses;
             
             if(totalIters % 100_000 == 0) {
                 System.Console.WriteLine(totalIters);
@@ -203,9 +212,22 @@ class Program
                 if(idx == -1) continue;
                 Node node = modules[idx];
 
-                if(node.Name == "rx" && !next.signal) {
-                    exit = true;
-                    break;
+                if (node.Name == feed && next.signal) {
+                    seen[next.nodeFrom] += 1;
+
+                    if(!cycles_lenght.TryGetValue(next.nodeFrom, out int value)) {
+                        cycles_lenght.Add(next.nodeFrom, totalIters);
+                    } else {
+                        Trace.Assert(totalIters == seen[next.nodeFrom] * value);
+                    }
+                    if(seen.Values.All(x=> x > 0)) {
+                        BigInteger result = new(1);
+
+                        foreach(var x in cycles_lenght.Values) {
+                            result = result * x /  BigInteger.GreatestCommonDivisor(result, x);
+                        }
+                        return (long)result;
+                    }
                 }
 
                 switch (node.Type) {
@@ -213,12 +235,6 @@ class Program
                         foreach(var nextNodes in node.Post) {
                             // Console.WriteLine("{0} - {2} -> {1}",node.Name, nextNodes, next.signal);
                             signals.Enqueue((node.Name, nextNodes, next.signal));
-                        }
-                        int total = node.Post.Count;
-                        if(next.signal) {
-                            highPulses+=total;
-                        } else {
-                            lowPulses+=total;
                         }
                         break;
                     }
@@ -231,12 +247,6 @@ class Program
                             // Console.WriteLine("{0} - {2} -> {1}",node.Name, nextNodes, node.State);
                             signals.Enqueue((node.Name, nextNodes, node.State));
                         }
-                        int total = node.Post.Count;
-                        if(node.State) {
-                            highPulses+=total;
-                        } else {
-                            lowPulses+=total;
-                        }
                         break;
                     }
                     default: {
@@ -247,12 +257,6 @@ class Program
                         foreach(var nextNodes in node.Post) {
                             // Console.WriteLine("{0} - {2} -> {1}",node.Name, nextNodes, signal);
                             signals.Enqueue((node.Name, nextNodes, signal));
-                        }
-                        int total = node.Post.Count;
-                        if(signal) {
-                            highPulses+=total;
-                        } else {
-                            lowPulses+=total;
                         }
                         break;
                     }
