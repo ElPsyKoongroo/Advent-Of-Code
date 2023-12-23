@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
 using MoreLinq;
 using Newtonsoft.Json;
@@ -21,7 +22,7 @@ class Program
     {
         string path = args.FirstOrDefault("../AOCtest");
         Console.WriteLine(Sol1(path));
-        // Console.WriteLine(Sol2(path));
+        Console.WriteLine(Sol2(path));
     }
 
     static char[][] ParseInput(string path) => 
@@ -80,7 +81,7 @@ class Program
         return positions.Count;
     }
 
-    static long Fill(int x, int y, int totalSteps, char[][] input) {
+    static int Fill(int x, int y, int totalSteps, char[][] input) {
         (int X, int Y)[] dirs = [
             (0,1),
             (0,-1),
@@ -162,6 +163,40 @@ class Program
             }   
         }
         
-        return Fill(iniX, iniY, 64, input);
+        int steps = 26501365;
+        int size = input.Length;
+
+        int grid_width = steps / size - 1;
+        long odd = (long)Math.Pow(grid_width / 2 * 2 + 1,2);
+        long even = (long)Math.Pow((grid_width+1) / 2 * 2,2);
+        //even = ((grid_width + 1) // 2 * 2) ** 2
+
+
+        long odd_points = Fill(iniX, iniY, size*2+1, input);
+        long even_points = Fill(iniX, iniY, size*2, input);
+
+        long corner_t = Fill(size-1, iniY, size-1, input);
+        long corner_r = Fill(iniX, 0, size-1, input);
+        long corner_b = Fill(0, iniY, size-1, input);
+        long corner_l = Fill(iniX, size-1, size-1, input);
+
+        long small_tr = Fill(size-1, 0, size/2-1, input);
+        long small_tl = Fill(size-1, size-1, size/2-1, input);
+        long small_br = Fill(0, 0, size/2-1, input);
+        long small_bl = Fill(0, size-1, size/2-1, input);
+
+        long large_tr = Fill(size-1, 0, size*3/2-1, input);
+        long large_tl = Fill(size-1, size-1, size*3/2-1, input);
+        long large_br = Fill(0, 0, size*3/2-1, input);
+        long large_bl = Fill(0, size-1, size*3/2-1, input);
+
+        long result =
+            odd * odd_points +
+            even * even_points +
+            corner_t + corner_r + corner_b + corner_l +
+            (grid_width+1) * (small_bl+small_br+small_tl+small_tr) +
+            grid_width * (large_bl+large_br+large_tl+large_tr);
+
+        return result;
     }
 }
