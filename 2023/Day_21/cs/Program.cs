@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Reflection.Metadata.Ecma335;
 using MoreLinq;
 using Newtonsoft.Json;
 
@@ -20,7 +21,7 @@ class Program
     {
         string path = args.FirstOrDefault("../AOCtest");
         Console.WriteLine(Sol1(path));
-        Console.WriteLine(Sol2(path));
+        // Console.WriteLine(Sol2(path));
     }
 
     static char[][] ParseInput(string path) => 
@@ -28,7 +29,8 @@ class Program
         .Select(l => l.ToCharArray())
         .ToArray();
 
-    static long Sol1(string path) {
+
+    static long Sol1BruteForce(string path) {
 
         var input = ParseInput(path);
 
@@ -78,7 +80,88 @@ class Program
         return positions.Count;
     }
 
+    static long Fill(int x, int y, int totalSteps, char[][] input) {
+        (int X, int Y)[] dirs = [
+            (0,1),
+            (0,-1),
+            (1,0),
+            (-1,0)
+        ];
+        int maxX = input[0].Length;
+        int maxY = input.Length;
+
+        HashSet<(int X, int Y)> answer = [];
+        HashSet<(int X, int Y)> seen = [(x, y)];
+
+        Queue<(int x, int Y, int Steps)> q = [];
+        q.Enqueue((x, y, totalSteps)); 
+
+        while(q.TryDequeue(out var act)) {
+            var (r,c,s) = act;
+
+            if(s % 2 == 0) {
+                answer.Add((r,c));
+            }
+            if(s == 0) continue;
+
+            foreach(var (dX, dY) in dirs) {
+                var (nX, nY) = (r+dX, c+dY);
+                if(nX < 0 || nX >= maxX || nY < 0 || nY >= maxY || input[nY][nX] != '.' || seen.Contains((nX, nY))) 
+                    continue;
+                
+                seen.Add((nX, nY));
+                q.Enqueue((nX, nY, s-1));
+                
+            }
+        
+        }
+
+        return answer.Count;
+    }
+
+    static long Sol1(string path) {
+        var input = ParseInput(path);
+
+        int maxX = input[0].Length;
+        int maxY = input.Length;
+
+        bool found = false;
+        int iniX = 0;
+        int iniY = 0;
+
+        for(int i = 0; i < maxY && !found; ++i) {
+            for(int j = 0; j < maxX && !found; ++j) {
+                if(input[i][j] == 'S') {
+                    found = true;
+                    input[i][j] = '.';
+                    (iniX, iniY) = (j,i);
+                }
+            }   
+        }
+        
+        return Fill(iniX, iniY, 64, input);
+    }
+
     static long Sol2(string path) {
-        return -1; 
+        var input = ParseInput(path);
+
+        int maxX = input[0].Length;
+        int maxY = input.Length;
+
+        bool found = false;
+        int iniX = 0;
+        int iniY = 0;
+
+        for(int i = 0; i < maxY && !found; ++i) {
+            for(int j = 0; j < maxX && !found; ++j) {
+                if(input[i][j] == 'S') {
+                    found = true;
+                    input[i][j] = '.';
+                    (iniX, iniY) = (j,i);
+                }
+            }   
+        }
+        
+        return Fill(iniX, iniY, 64, input);
     }
 }
