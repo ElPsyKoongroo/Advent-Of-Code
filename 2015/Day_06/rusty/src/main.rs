@@ -4,9 +4,8 @@ use nom::{
     IResult,
     bytes::complete::tag, 
     branch::alt, 
-    combinator::{value, map_res}, 
+    combinator::value, 
     sequence::separated_pair, 
-    character::complete::digit1
 };
 
 enum Instruction {
@@ -31,8 +30,8 @@ fn parse_line(line: &str) -> Instruction {
 
     let turn_on = if !is_toggle {
         let (re2, turn) = alt((
-            value(true, tag::<&str, &str, nom::error::Error<_>>("on ")),
-            value(false, tag("off ")),
+            value(true, tag("on ")),
+            value(false, tag::<&str, &str, nom::error::Error<_>>("off ")),
           ))(rem).unwrap();
           rem = re2;
           turn
@@ -40,11 +39,11 @@ fn parse_line(line: &str) -> Instruction {
         false
     };
 
-    let (rem, r1) = parse_range(rem);
+    let (rem, r1) = parse_range(rem).unwrap();
 
     let (rem, _) = tag::<&str, &str, nom::error::Error<_>>(" through ")(rem).unwrap();
 
-    let (rem, r2) = parse_range(rem); 
+    let (rem, r2) = parse_range(rem).unwrap(); 
 
     assert!(rem.len() == 0);
 
@@ -60,14 +59,12 @@ fn parse_line(line: &str) -> Instruction {
 
 }
 
-fn parse_range(input: &str) -> (&str, (u16, u16)) {
-    let (rem, range) = 
+fn parse_range(input: &str) -> IResult<&str, (u16, u16)> {
         separated_pair(
-            map_res(digit1::<&str, nom::error::Error<_>>, str::parse::<u16>),
+            nom::character::complete::u16,
             tag(","),
-            map_res(digit1::<&str, nom::error::Error<_>>, str::parse::<u16>)
-        )(input).unwrap();
-    (rem, (range.0,range.1))
+            nom::character::complete::u16
+        )(input)
 }
 
 fn parse_toogle(input: &str) -> IResult<&str, bool> {
