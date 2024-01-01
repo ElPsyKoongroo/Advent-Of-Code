@@ -1,4 +1,4 @@
-use std::{ops::RangeInclusive, fs};
+use std::{ops::Range, fs};
 
 use nom::{
     IResult,
@@ -9,9 +9,9 @@ use nom::{
 };
 
 enum Instruction {
-    On(RangeInclusive<u16>, RangeInclusive<u16>),
-    Off(RangeInclusive<u16>, RangeInclusive<u16>),
-    Toggle(RangeInclusive<u16>, RangeInclusive<u16>),
+    On(     Range<u16>, Range<u16>),
+    Off(    Range<u16>, Range<u16>),
+    Toggle( Range<u16>, Range<u16>),
 }
 
 fn main() {
@@ -47,7 +47,7 @@ fn parse_line(line: &str) -> Instruction {
 
     assert!(rem.len() == 0);
 
-    let (r1, r2) = ((r1.0..=r2.0), (r1.1..=r2.1));
+    let (r1, r2) = ((r1.0..r2.0+1), (r1.1..r2.1+1));
 
     if is_toggle {
         Instruction::Toggle(r1, r2)
@@ -95,6 +95,8 @@ fn part1(path: &str) {
                     }
                 }
             },
+
+            
             Instruction::Toggle(r1, r2) => {
                 for i in r1 {
                     for j in r2.clone() {
@@ -149,5 +151,5 @@ fn part2(path: &str) {
 
     let total: u64 = state.into_iter().map(|arr| arr.into_iter().sum::<u32>() as u64).sum();
 
-    println!("Res1: {total}");
+    println!("Res2: {total}");
 }
